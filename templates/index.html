@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Joseph Christian Eid">
+    <meta name="generator" content="Jekyll v3.8.5">
+    <title>anTSP</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/ants.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/fontawesome.css') }}">
+
+
+    <!-- Bootstrap javascript -->
+    <script src="{{ url_for('static', filename='scripts/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/ants.js') }}"></script>
+
+
+    <!-- anTSP favicon -->
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top" style="background-color: #000000;">
+      <img src="{{ url_for('static', filename='images/favicon.ico') }}" width="35" height="32" alt="">
+      <a class="navbar-brand" href="/">anTSP</a>
+    </nav>
+
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Enter Parameters</h5>
+              <form name="myForm" onsubmit="return false">
+                <input type="hidden" id="savedCustomCoords" name="savedCustomCoords"></input>
+                <div class="form-group form-inline align-items-center">
+                  <label for="instance">Instance:</label>
+                  <div class="col-auto">
+                    <select class="form-control" id="instancesDropdown" name="instance" onchange=previewInstance()>
+                    </select>
+                    <i class="fas fa-question" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
+                  </div>
+                  <div class="col-auto">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                      <i class="fas fa-edit"></i>
+                      Custom Instance
+                    </button>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="generations" class="col-sm-6 col-form-label">Generations:</label>
+                  <div class="col-sm-3">
+                    <input type="number" step="1" min="1" name="generations" class="form-control col-auto" id="generations" value="100" required></input>
+                  </div>
+                  <i class="fas fa-question col-form-label" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
+                </div>
+                <div class="form-group row">
+                  <label for="alpha" class="col-sm-6 col-form-label">Alpha:</label>
+                  <div class="col-sm-3">
+                    <input type="number" step="0.1" min="0" name="alpha" class="form-control col-auto" id="alpha" value="1" required></input>
+                  </div>
+                  <i class="fas fa-question col-form-label" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
+                </div>
+                <div class="form-group row">
+                  <label for="beta" class="col-sm-6 col-form-label">Beta:</label>
+                  <div class="col-sm-3">
+                    <input type="number" step="0.1" min="0" name="beta" class="form-control col-auto" id="beta" value="5" required></input>
+                  </div>
+                  <i class="fas fa-question col-form-label" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
+                </div>
+                <div class="form-group row">
+                  <label for="pec" class="col-sm-6 col-form-label">Pheremone Evaporation Rate:</label>
+                  <div class="col-sm-3">
+                    <input type="number" step="0.1" min="0" name="pec" class="form-control col-auto" id="pec" value="0.5" required></input>
+                  </div>
+                  <i class="fas fa-question col-form-label" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
+                </div>
+                <div class="form-group row">
+                  <label for="q" class="col-sm-6 col-form-label">Q Constant:</label>
+                  <div class="col-sm-3">
+                    <input type="number" step="0.1" min="0" name="q" class="form-control col-auto" id="q" value="1" required></input>
+                  </div>
+                  <i class="fas fa-question col-form-label" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
+                </div>
+
+                <div class="text-center">
+                  <button id="solveButton" type="submit" onclick="solve()" class="btn btn-success">
+                    <i class="fas fa-calculator"></i>
+                    Solve
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Console Output</h5>
+              <script>
+              if (!!window.EventSource) {
+                var source = new EventSource('/');
+                source.onmessage = function(e) {
+                  $("#data").text(e.data);
+                }
+              }
+              </script>
+              <div id="data">nothing received yet</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="row mt-1">
+
+        <div class="col-sm-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Tour Preview/Solution</h5>
+              <img style="max-width: 100%;" src="" id="graph1" alt="Plot will show here">
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Known Optimal Solution</h5>
+              <img style="max-width: 100%;" src="" id="graph2" alt="Plot will show here">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+          <!-- Modal -->
+      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Add Custom TSP Instance</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body text-center">
+              <form name="customForm" id="customForm">
+                <div class="form-group form-inline align-items-center">
+                  <div class="col-auto">
+                    <label>Add Coordinate:</label>
+                    <input type="number" name="xVal" class="form-control col-md-4" id="xVal" placeholder="X coordinate" required></input>
+                    <input type="number" name="yVal" class="form-control col-md-4" id="yVal" placeholder="Y coordinate" required></input>
+                    <input type="hidden" id="customCoords" name="customCoords"></input>
+                    <button type="button" onclick=addCoordinate() class="form-control btn btn-success">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
+                </div>
+              </form>
+              <img src="" style="max-width:100%; height:auto;"id="graphCustom" alt="Custom instance will show here">
+
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" onclick=resetCustom()>
+                <i class="fas fa-redo"></i>
+                Reset
+              </button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <i class="fas fa-times"></i>
+                Close
+              </button>
+              <button type="button" class="btn btn-primary" onclick=saveChanges() data-dismiss="modal">
+                <i class="fas fa-check"></i>
+                Save changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        var options = {{instances|tojson}};
+        $('#instancesDropdown').empty();
+        $.each(options, function(i, p) {
+            $('#instancesDropdown').append($('<option></option>').val(p).html(p));
+        });
+        $('#instancesDropdown').append($('<option></option>').val("Custom").html("Custom"));
+        previewInstance();
+      </script>
+    </main>
+
+  </body>
+</html>
