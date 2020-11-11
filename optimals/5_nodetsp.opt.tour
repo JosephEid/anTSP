@@ -1,0 +1,8 @@
+NAME : 5_nodetsp.opt.tour
+COMMENT : Optimum solution of 5_nodetsp
+TYPE : TOUR
+DIMENSION : 5
+TOUR_SECTION
+1 5 2 3 4
+-1
+EOF

@@ -1,0 +1,8 @@
+NAME : 15_nodetsp.opt.tour
+COMMENT : Optimum solution of 15_nodetsp
+TYPE : TOUR
+DIMENSION : 15
+TOUR_SECTION
+1 9 13 6 5 10 7 15 4 3 14 12 8 11 2 1
+-1
+EOF

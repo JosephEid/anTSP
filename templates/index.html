@@ -11,7 +11,7 @@
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/ants.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/fontawesome.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/fontawesome-free-5.8.1-web/css/all.css') }}">
 
 
     <!-- Bootstrap javascript -->
@@ -20,9 +20,9 @@
     <script src="{{ url_for('static', filename='scripts/ants.js') }}"></script>
 
 
+
     <!-- anTSP favicon -->
     <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='images/favicon.ico') }}">
-
 
   </head>
 
@@ -30,14 +30,37 @@
     <nav class="navbar navbar-expand-md navbar-dark fixed-top" style="background-color: #000000;">
       <img src="{{ url_for('static', filename='images/favicon.ico') }}" width="35" height="32" alt="">
       <a class="navbar-brand" href="/">anTSP</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/about">About</a>
+          </li>
+        </ul>
+      </div>
     </nav>
 
     <main role="main" class="container">
       <div class="row">
         <div class="col-sm-6">
-          <div class="card">
+          <div class="card border-dark mb-3">
+            <div class="card-header">
+              <h5 class="card-title">Enter Parameters
+                <button type="button" class="btn btn-info float-right" data-toggle="modal" data-target="#paramModal">
+                  <i class="fas fa-info"></i>
+                  Parameter Info
+                </button>
+              </h5>
+
+            </div>
+
             <div class="card-body">
-              <h5 class="card-title">Enter Parameters</h5>
               <form name="myForm" onsubmit="return false">
                 <input type="hidden" id="savedCustomCoords" name="savedCustomCoords"></input>
                 <div class="form-group form-inline align-items-center">
@@ -45,10 +68,9 @@
                   <div class="col-auto">
                     <select class="form-control" id="instancesDropdown" name="instance" onchange=previewInstance()>
                     </select>
-                    <i class="fas fa-question" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
                   </div>
                   <div class="col-auto">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#customModal">
                       <i class="fas fa-edit"></i>
                       Custom Instance
                     </button>
@@ -59,42 +81,63 @@
                   <div class="col-sm-3">
                     <input type="number" step="1" min="1" name="generations" class="form-control col-auto" id="generations" value="100" required></input>
                   </div>
-                  <i class="fas fa-question col-form-label" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
                 </div>
                 <div class="form-group row">
                   <label for="alpha" class="col-sm-6 col-form-label">Alpha:</label>
                   <div class="col-sm-3">
                     <input type="number" step="0.1" min="0" name="alpha" class="form-control col-auto" id="alpha" value="1" required></input>
                   </div>
-                  <i class="fas fa-question col-form-label" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
                 </div>
                 <div class="form-group row">
                   <label for="beta" class="col-sm-6 col-form-label">Beta:</label>
                   <div class="col-sm-3">
                     <input type="number" step="0.1" min="0" name="beta" class="form-control col-auto" id="beta" value="5" required></input>
                   </div>
-                  <i class="fas fa-question col-form-label" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
                 </div>
                 <div class="form-group row">
                   <label for="pec" class="col-sm-6 col-form-label">Pheremone Evaporation Rate:</label>
                   <div class="col-sm-3">
                     <input type="number" step="0.1" min="0" name="pec" class="form-control col-auto" id="pec" value="0.5" required></input>
                   </div>
-                  <i class="fas fa-question col-form-label" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
                 </div>
                 <div class="form-group row">
                   <label for="q" class="col-sm-6 col-form-label">Q Constant:</label>
                   <div class="col-sm-3">
                     <input type="number" step="0.1" min="0" name="q" class="form-control col-auto" id="q" value="1" required></input>
                   </div>
-                  <i class="fas fa-question col-form-label" data-toggle="tooltip" data-placement="right" title="Tooltip on right"></i>
                 </div>
-
+                <input type="hidden" id="clientId" name="clientId"></input>
+                <input type="hidden" id="optDist" name="optDist"></input>
+                <input type="hidden" id="timeStart" name="timeStart"></input>
                 <div class="text-center">
                   <button id="solveButton" type="submit" onclick="solve()" class="btn btn-success">
                     <i class="fas fa-calculator"></i>
                     Solve
                   </button>
+                  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+
+                  <script type="text/javascript" charset="utf-8">
+                    protocol = window.location.protocol;
+                    var socket = io.connect(protocol + '//' + document.domain + ':' + location.port);
+                    console.log(location.port);
+                    socket.on('connect', function() {
+                      socket.on('my response', function(t) {
+                        $('#clientId').empty();
+
+                        $('#clientId').append(t);
+                      });
+                      socket.on('my event', function(t){
+                        add(t).prependTo('#messages');
+                      });
+                      socket.on('opt dist', function(t){
+                        $('#optDist').empty();
+                        $('#optDist').append(t);
+                      });
+                    });
+                    socket.on('disconnect', function() {
+                      console.log("disconnected");
+                    });
+                  </script>
                 </div>
               </form>
             </div>
@@ -102,18 +145,14 @@
         </div>
 
         <div class="col-sm-6">
-          <div class="card">
-            <div class="card-body">
+          <div class="card border-dark mb-3">
+            <div class="card-header">
               <h5 class="card-title">Console Output</h5>
-              <script>
-              if (!!window.EventSource) {
-                var source = new EventSource('/');
-                source.onmessage = function(e) {
-                  $("#data").text(e.data);
-                }
-              }
-              </script>
-              <div id="data">nothing received yet</div>
+            </div>
+            <div class="card-body">
+              <div class="cli">
+                <ul id="messages" class="messages"></ul>
+              </div>
             </div>
           </div>
         </div>
@@ -121,20 +160,23 @@
       </div>
 
       <div class="row mt-1">
-
         <div class="col-sm-6">
-          <div class="card">
-            <div class="card-body">
+          <div class="card border-dark mb-3">
+            <div class="card-header">
               <h5 class="card-title">Tour Preview/Solution</h5>
+            </div>
+            <div class="card-body">
               <img style="max-width: 100%;" src="" id="graph1" alt="Plot will show here">
             </div>
           </div>
         </div>
 
         <div class="col-sm-6">
-          <div class="card">
-            <div class="card-body">
+          <div class="card border-dark mb-3">
+            <div class="card-header">
               <h5 class="card-title">Known Optimal Solution</h5>
+            </div>
+            <div class="card-body">
               <img style="max-width: 100%;" src="" id="graph2" alt="Plot will show here">
             </div>
           </div>
@@ -143,7 +185,7 @@
       </div>
 
           <!-- Modal -->
-      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal fade" id="customModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
@@ -160,10 +202,12 @@
                     <input type="number" name="xVal" class="form-control col-md-4" id="xVal" placeholder="X coordinate" required></input>
                     <input type="number" name="yVal" class="form-control col-md-4" id="yVal" placeholder="Y coordinate" required></input>
                     <input type="hidden" id="customCoords" name="customCoords"></input>
+                    <p id="errors">Errors appear here</p>
                     <button type="button" onclick=addCoordinate() class="form-control btn btn-success">
                       <i class="fas fa-plus"></i>
                     </button>
                   </div>
+
                 </div>
               </form>
               <img src="" style="max-width:100%; height:auto;"id="graphCustom" alt="Custom instance will show here">
@@ -178,9 +222,41 @@
                 <i class="fas fa-times"></i>
                 Close
               </button>
-              <button type="button" class="btn btn-primary" onclick=saveChanges() data-dismiss="modal">
+              <button type="button" class="btn btn-primary" onclick=saveChanges()>
                 <i class="fas fa-check"></i>
                 Save changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="paramModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Add Custom TSP Instance</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body text-center">
+              <h4>Instance:</h4>
+              <p>Choose a preloaded instance or created custom instance to be solved. The custom instance can be edited using the 'Custom Instance' button.</p>
+              <h4>Generations:</h4>
+              <p>A greater amount of generations increases the chances of the colony finding an optimal solution at the expense of running time.</p>
+              <h4>Alpha:</h4>
+              <p>A lower Alpha will reduce the effect pheromone trail strength has when an ant chooses its next node, higher does the opposite.</p>
+              <h4>Beta:</h4>
+              <p>A lower Beta will reduce the effect a nodes distance is when an ant is choosing its next node, a higher Beta does the opposite.</p>
+              <h4>Pheremone Evaporation Coefficient:</h4>
+              <p>This should ideally range from 0-1, where 1 corresponds to 0% pheromone trail evaporation and 0 corresponds to 100% pheromone trail evaporation.</p>
+              <h4>Q Constant:</h4>
+              <p>The Q constant specifies the maximum amount of pheromone an Ant can deposit on a trail, changing this should not really affect performance.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <i class="fas fa-times"></i>
+                Close
               </button>
             </div>
           </div>
