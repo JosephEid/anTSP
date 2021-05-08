@@ -1,5 +1,5 @@
 Flask==1.0
 matplotlib==2.2.3
-eventlet==0.24.1
+eventlet==0.31.0
 Flask_SocketIO==3.3.2
 gunicorn==19.5.0
